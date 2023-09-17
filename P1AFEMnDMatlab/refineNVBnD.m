@@ -1,5 +1,4 @@
-function [coordinates,elements,element2neighbour,level] = ...
-                           refineNVBnD(coordinates,elements,element2neighbour,...
+function [C,E,E2N,L] = refineNVBnD(coordinates,elements,element2neighbour,...
                            level,varargin)
 % This function gives a framework for the refinement process.
 %
@@ -32,8 +31,6 @@ function [coordinates,elements,element2neighbour,level] = ...
 % Authors:
 %   S. Beuter, S. Funken 18-10-22
 
-global C E L E2N nC nE  
-nB = length(varargin)-1;
 marked = varargin{end};
 
 E2N = element2neighbour;
@@ -46,9 +43,7 @@ E(nEmax,1) = 0;  E2N(nEmax,1) = 0; L(nEmax,1) = 0; C(2*nC,1) = 0;
 lev = L;
 for e = reshape(marked,1,[])
   if lev(e) == L(e)
-    refine(e);  
+    [~,C,E,L,E2N,nC,nE] = refine(e,C,E,L,E2N,nC,nE);  
   end
 end
-coordinates = C(1:nC,:); elements = E(1:nE,:);  level = L(1:nE); E2N = E2N(1:nE,:);
-element2neighbour = E2N;
-level = L;
+C = C(1:nC,:); E = E(1:nE,:);  L = L(1:nE); E2N = E2N(1:nE,:);

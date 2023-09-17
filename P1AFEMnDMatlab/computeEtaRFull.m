@@ -1,5 +1,32 @@
 function etaR = computeEtaRFull(x,coordinates,elements,element2neighbour,f,g,...
     D,volumes,grad)
+% Calculation of error estimates for a given approximation of a general 
+% linear elliptiv problem.
+%
+% etaR = computeEtaRFull(x,coordinates,elements,element2neighbour,f,g,D,volumes,grad)
+% calculation of error estimates for each element in a mesh saved in the
+% vector etaR. The mesh is given by its defining arrays coordinates saving
+% the coordinates of all vertices row wise, elements having in each row the
+% vertex numbers of the simplices, element2neighbour that contains in
+% each row the neighbour numbers of an element and the problem specific 
+% parameters saved in D. The approximated solution is expected as a vector 
+% x. The function handles f and g define the right hand side of the model
+% problem. The problem parameters of the PDE are given in object D. For any
+% element of a mesh the volumes and gradients are expected row wise in
+% volumes and grad.
+% 
+%Comments:
+%   This is a residual based a posteriori error estimator. Integrals are
+%   calculated by Gauss type quadrature rules called by function quadnd.
+%
+%Remark:
+%   This program is a supplement to the paper 
+%   >> Efficient P1-FEM for any space dimension in Matlab <<
+%   by S. Beuter, and S. Funken. The reader should 
+%   consult that paper for more information.   
+%
+%Authors:
+%   S. Beuter, S. Funken 18-10-22
 
 nE = size(elements,1);
 nD = size(coordinates,2);

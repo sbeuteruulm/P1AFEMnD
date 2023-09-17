@@ -2,7 +2,7 @@ function etaR = computeEtaR(x,coordinates,elements,element2neighbour,f,g,volumes
 % Calculation of error estimates for a given approximation of the Poisson
 % problem.
 %
-% etaR = computeEtaR(x,coordinates,elements,element2neighbour,f,g,D,volumes,grad)
+% etaR = computeEtaR(x,coordinates,elements,element2neighbour,f,g,volumes,grad)
 % calculation of error estimates for each element in a mesh saved in the
 % vector etaR. The mesh is given by its defining arrays coordinates saving
 % the coordinates of all vertices row wise, elements having in each row the

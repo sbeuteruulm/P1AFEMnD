@@ -1,7 +1,6 @@
 function [x,energy,vol,G] = solvePDE(coordinates,elements, ...
-                                     dirichlet,neumann,f,g,uD,D)
-% Calculation of an approximated solution of the partial differential
-% equation
+                                     dirichlet,neumann,f,g,uD)
+% Calculation of an approximated solution of the Poisson problem
 %
 % [x,energy,vol,G] = solvePDE(coordinates,elements, ...
 % dirichlet,neumann,f,g,uD,D) calculates approximated solution x of PDE on
@@ -10,8 +9,7 @@ function [x,energy,vol,G] = solvePDE(coordinates,elements, ...
 % vertex numbers for each elements in its rows and the boundary
 % information, where dirichlet and neumann have in each row a hyperface of
 % the boundary. The problem defining functions f, g, and uD are given as
-% function handles. And the problem parameters are saved in object D which
-% consists of the fields D.A, D.b, and D.c.
+% function handles.
 %
 %Comments:
 %   The function expects a non-empty array for dirichlet boundary
@@ -31,26 +29,16 @@ nC = size(coordinates,1);
 nD = size(coordinates,2);
 %*** Compute gradients and relative volume of simplices |T|/|T_ref|
 [vol,G] = volngrad(coordinates,elements);
-%*** Assemble,   -div( A * Du ) + b * Du + c * u = f
-idx = repmat(1:nD+1,nD+1,1);
-I = reshape(elements(:,idx(:)),[],1);idx = idx';
-J = reshape(elements(:,idx(:)),[],1);
-S = zeros(size(elements,1),(nD+1)^2);
-cc = D.c/((nD+1)*(nD+2)) * vol;
+%*** Assemble,   -div( Du ) = f
+S = sparse(nC,nC);
 for j = 1 : nD+1
-  volAxGj = vol.*( G{j} * D.A );  
-  bbpcc = vol.*( G{j} * D.b/(nD+1) ) + cc;
-  S(:,(j-1)*(nD+1)+j) = dot(G{j},volAxGj,2) + bbpcc + cc; 
+  volxGj = vol.*G{j};  
+  S = S+sparse(elements(:,j),elements(:,j),dot(G{j},volxGj,2),nC,nC)./2;
   for k = j+1 : nD+1
-    S(:,(j-1)*(nD+1)+k) = dot(G{k},volAxGj,2);
-    S(:,(k-1)*(nD+1)+j) = S(:,(j-1)*(nD+1)+k) + bbpcc; 
-  end
-  for k = 1:j-1
-    S(:,(k-1)*(nD+1)+j) = S(:,(k-1)*(nD+1)+j) + bbpcc; 
+    S = S+sparse(elements(:,j),elements(:,k),dot(G{k},volxGj,2),nC,nC);
   end
 end
-S = sparse(I,J,S(:)); 
-clear I J;
+S = S + S';
 %*** Prescribe values at Dirichlet nodes
 x = zeros(nC,1);
 dirichlet = unique(dirichlet);
@@ -79,7 +67,10 @@ freenodes = setdiff(1:nC, dirichlet);
 afun = @(x) S(freenodes,freenodes) * x;
 D = diag(S(freenodes,freenodes));
 prae = @(x) x./D;
-[x(freenodes),~,~,~] = pcg(@(x)afun(x),b(freenodes),1e-6*length(freenodes)^(-1/nD), ...
+x(freenodes) = pcg(@(x)afun(x),b(freenodes),1e-6*length(freenodes)^(-1/nD), ...
                   length(freenodes),@(x)prae(x) );
+%*** Compute energy || grad(uh) ||^2 of discrete solution
 energy = x'*S*x;
-end
+
+
+

@@ -1,5 +1,31 @@
 function [x,energy,vol,G] = solvePDEFull(coordinates,elements, ...
                                      dirichlet,neumann,f,g,uD,D)
+% Calculation of an approximated solution of the a general linear elliptic
+% partial differential equation
+%
+% [x,energy,vol,G] = solvePDE(coordinates,elements, ...
+% dirichlet,neumann,f,g,uD,D) calculates approximated solution x of PDE on
+% a given mesh. The mesh is described by its coordinates given vertex wise
+% in the rows of the array coordinates, the element array containing the
+% vertex numbers for each elements in its rows and the boundary
+% information, where dirichlet and neumann have in each row a hyperface of
+% the boundary. The problem defining functions f, g, and uD are given as
+% function handles. And the problem parameters are saved in object D which
+% consists of the fields D.A, D.b, and D.c.
+%
+%Comments:
+%   The function expects a non-empty array for dirichlet boundary
+%   conditions. Neumann boundary conditions are optional for the solution
+%   and can therefore be given as an empty array.
+%
+%Remark:
+%   This program is a supplement to the paper 
+%   >> Efficient P1-FEM for any space dimension in Matlab <<
+%   by S. Beuter, and S. Funken. The reader should 
+%   consult that paper for more information.   
+%
+%Authors:
+%   S. Beuter, S. Funken 18-10-22
 nC = size(coordinates,1);
 nD = size(coordinates,2);
 %*** Compute gradients and relative volume of simplices |T|/|T_ref|

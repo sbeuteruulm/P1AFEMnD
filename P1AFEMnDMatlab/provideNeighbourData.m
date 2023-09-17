@@ -30,8 +30,7 @@ nE = size(element2hyperfaces,1);
 nN = size(element2hyperfaces,2);
 
 hyperface2elements = zeros(max(element2hyperfaces(:)),2);
-ind = sortrows(reshape([element2hyperfaces(:), ...
-               reshape( (1:nE)'*ones(1,nN),[],1)],[],2));
+ind = sortrows([element2hyperfaces(:),repmat((1:nE)',nN,1)]);
 flag = [false;ind(1:end-1,1) == ind(2:end,1)];
 hyperface2elements(ind(~flag,1),1) = ind(~flag,2);
 hyperface2elements(ind(flag,1),2) = ind(flag,2);
