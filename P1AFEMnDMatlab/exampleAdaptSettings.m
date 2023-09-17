@@ -4,13 +4,13 @@ clc
 
 % Define settings
     % problem size ('small', 'medium', 'large')
-    Psize = 'medium';
+    Psize = 'small';
     % adaptivity ('low', 'high', 'uniform')
-    adaptivity = 'high';
+    adaptivity = 'low';
     % problem dimesnision (a natural number)
-    d = 3;
+    d = 2;
     % problem type ('linear', 'quadratic' (in the first component))
-    pType = 'quadratic';
+    pType = 'linear';
     
 % Define stopping criterion and adaptivity parameter according to problem
 % setting
@@ -34,13 +34,13 @@ switch true
         nEmax = 50000;
         eta = 1;
     case strcmp(Psize,'large') && strcmp(adaptivity,'low')
-        nEmax = 1000000;
+        nEmax = 500000;
         eta = 0.7;
     case strcmp(Psize,'large') && strcmp(adaptivity,'high')
-        nEmax = 1000000;
+        nEmax = 500000;
         eta = 0.2;
     case strcmp(Psize,'large') && strcmp(adaptivity,'uniform')
-        nEmax = 1000000;
+        nEmax = 500000;
         eta = 1;
     otherwise
         disp('No possible setting choice.')
@@ -56,17 +56,20 @@ neumann = [];
 
 level = zeros(size(elements,1),1);
 
-% Define problem specification
-D.A  = ones(d)+d*eye(d);
-D.b  = zeros(d,1);
-D.c  = 0;
-
 % Define right hand side
 if strcmp(pType,'linear')
+    % Define problem specification
+    D.A  = eye(d);
+    D.b  = zeros(d,1);
+    D.c  = 0;
     f  = @(x)  zeros(size(x,1),1);
     g  = @(x)  zeros(size(x,1),1);
     uD = @(x)  x(:,1);
 elseif strcmp(pType,'quadratic')
+    % Define problem specification
+    D.A  = ones(d)+d*eye(d); %eye(d); %
+    D.b  = 0.2*ones(d,1);
+    D.c  = 0.2;
     f  = @(x)  -(2*d+2)*ones(size(x,1),1);
     g  = @(x)  zeros(size(x,1),1);
     uD = @(x)  x(:,1).^2 + x(:,2);
@@ -83,11 +86,6 @@ if strcmp(pType,'linear')
     [maxi,idx] = max(abs(x-coordinates(:,1)));
     if coordinates(idx,1) ~= 0
         disp(['Maximum relative error ',num2str(maxi/abs(coordinates(idx,1)))])
-    end
-else
-    [maxi,idx] = max(abs(x-(coordinates(:,1).^2+coordinates(:,2))));
-    if (coordinates(idx,1).^2+coordinates(idx,2)) ~= 0
-        disp(['Maximum relative error ',num2str(maxi/abs(coordinates(idx,1).^2+coordinates(idx,2)))])
     end
 end
 
