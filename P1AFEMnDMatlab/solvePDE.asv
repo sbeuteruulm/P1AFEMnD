@@ -1,5 +1,5 @@
 function [x,energy,vol,G] = solvePDE(coordinates,elements, ...
-                                     dirichlet,neumann,f,g,uD)
+                                     dirichlet,neumann,f,g,uD,D)
 nC = size(coordinates,1);
 nD = size(coordinates,2);
 %*** Compute gradients and relative volume of simplices |T|/|T_ref|
@@ -12,8 +12,13 @@ for j = 1 : nD+1
   for k = j+1 : nD+1
     S = S+sparse(elements(:,j),elements(:,k),dot(G{k},volxGj,2),nC,nC);
   end
+%   for k = 1:j-1
+%     S_tmp(:,(k-1)*(nD+1)+j) = S_tmp(:,(k-1)*(nD+1)+j) + bbpcc; 
+%   end
 end
 S = S + S';
+% S_tmp = sparse(I,J,S_tmp(:)); 
+% clear I J;
 %*** Prescribe values at Dirichlet nodes
 x = zeros(nC,1);
 dirichlet = unique(dirichlet);

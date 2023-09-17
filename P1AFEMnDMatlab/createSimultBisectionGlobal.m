@@ -1,4 +1,5 @@
-function [C,E,L,E2N,nC,nE] = createSimultBisection(C,E,L,E2N,nC,nE,varargin)                    
+function createSimultBisection(varargin)
+global C E L E2N nC nE                      
                                     
 marked = varargin{end};
 nR = length(marked);      % number of simplices to be refined

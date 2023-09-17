@@ -1,19 +1,26 @@
-function [x,energy,vol,G] = solvePDE(coordinates,elements, ...
-                                     dirichlet,neumann,f,g,uD)
+function [x,energy,vol,G] = solvePDEFull(coordinates,elements, ...
+                                     dirichlet,neumann,f,g,uD,D)
 nC = size(coordinates,1);
 nD = size(coordinates,2);
 %*** Compute gradients and relative volume of simplices |T|/|T_ref|
 [vol,G] = volngrad(coordinates,elements);
-%*** Assemble,   -div( Du ) = f
+%*** Assemble,   -div( A * Du ) + b * Du + c * u = f
 S = sparse(nC,nC);
+cc = D.c/((nD+1)*(nD+2)) * vol;
 for j = 1 : nD+1
-  volxGj = vol.*G{j};  
-  S = S+sparse(elements(:,j),elements(:,j),dot(G{j},volxGj,2),nC,nC)./2;
+  volAxGj = vol.*( G{j} * D.A );  
+  bbpcc = vol.*( G{j} * D.b/(nD+1) ) + cc;
+  S = S + sparse(elements(:,j),elements(:,j),dot(G{j},volAxGj,2) + bbpcc + cc,nC,nC); 
   for k = j+1 : nD+1
-    S = S+sparse(elements(:,j),elements(:,k),dot(G{k},volxGj,2),nC,nC);
+    volGkGj = dot(G{k},volAxGj,2);
+    S = S + sparse(elements(:,j),elements(:,k),volGkGj,nC,nC) ...
+        + sparse(elements(:,k),elements(:,j),volGkGj,nC,nC);
+    S = S + sparse(elements(:,k),elements(:,j),bbpcc,nC,nC); 
+  end
+  for k = 1:j-1
+    S = S+sparse(elements(:,k),elements(:,j),bbpcc,nC,nC);
   end
 end
-S = S + S';
 %*** Prescribe values at Dirichlet nodes
 x = zeros(nC,1);
 dirichlet = unique(dirichlet);
