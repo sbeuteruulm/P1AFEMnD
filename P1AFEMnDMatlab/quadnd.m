@@ -1,4 +1,40 @@
 function [lambda, weights] = quadnd(nD,order)
+% Gauss type quadrature rules on n-dimensional simplex
+%
+% [lambda, weights] = quadnd(nD,order) gives the barycentric coordinates
+% and the weights for a quadrature formula of order order. The sum of
+% the weights is 1. The quadrature formula is exact for all polynomials 
+% of total degree less or equalorder 
+% (total degree = maximum of the degrees of all terms in a polynomial)
+%
+% Comments:
+%   Nodes and weights are originally taken from
+%   L. Zhang, T. Cui, and H. Liu, A set of symmetric quadrature rules 
+%   on triangles and tetrahedra, J Comp Math (27) 2009
+%
+% References:
+%    Axel Grundmann, Michael Moeller,
+%    Invariant Integration Formulas for the N-Simplex by Combinatorial
+%    Methods, SIAM Journal on Numerical Analysis,
+%    Volume 15, Number 2, April 1978, pages 282-290. 
+%    Arthur Stroud,
+%    Approximate Calculation of Multiple Integrals,
+%    Prentice Hall, 1971,                            
+%    Arthur H Stroud,
+%    A Fifth Degree Integration Formula for the N-Simplex,
+%    SIAM Journal on Numerical Analysis,
+%    Volume 6, Number 1, March 1969.
+%
+% Remark:
+%   This program is a supplement to the paper 
+%   >> Efficient P1-FEM for any space dimension in Matlab <<
+%   by S. Beuter, and S. Funken. The reader should 
+%   consult that paper for more information.   
+%
+% Authors:
+%   S. Beuter, S. Funken 18-10-22
+
+
 max_order = 5;
 if order > max_order
   disp(['Warning: Gauss type rule of order ',num2str(order),...

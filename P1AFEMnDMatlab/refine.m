@@ -1,8 +1,33 @@
-function [s,C,E,L,E2N,nC,nE] = refine(e,C,E,L,E2N,nC,nE) 
+function s = refine(e)
+% Performance of closure step of Newest Vertex Bisection refinement.
+% 
+% s = refine(e) for a given element number e that shall be refined,
+% additional neighbouring elements have to be refined, to keep the mesh
+% conforming. All numbers of elements that get additionally refined are
+% returned in s.
+% 
+% Comments:
+%   Necessary mesh information is given as global arrays. For a marked
+%   element any neighbour sharing the refinement edge has to be refined
+%   as well. If two elements do not have the refinement edge in common,
+%   additional refinements may be necessary. Then, bisection of all 
+%   elements around a refinement edge is done by the call of
+%   createSimultBisection.
+% 
+% Remark:
+%   This program is a supplement to the paper 
+%   >> Efficient P1-FEM for any space dimension in Matlab <<
+%   by S. Beuter, and S. Funken. The reader should 
+%   consult that paper for more information.   
+% 
+% Authors:
+%   S. Beuter, S. Funken 18-10-22
+
+global E E2N i2fi nE 
 
 nD = size(E,2) - 1; nN = size(E,2);
 K = [];  F = e;
-FK = false(nE,1);  FK(e) = true;       
+FK = false(nE,1);  FK(e) = true;    
 while ~isempty(F)
   Fnew = [];
   for e1 = F(:)'
@@ -17,7 +42,7 @@ while ~isempty(F)
             ((e1a == e2b) && (e1b == e2a))  
           Fnew = [Fnew,e2];
         else
-          [s,C,E,L,E2N,nC,nE] = refine(e2,C,E,L,E2N,nC,nE);
+          s = refine(e2);
           FK(nE) = false;            
           % add to Fnew the child of e2 that is a neighbour of e1                     
           if ismember(s(1),E2N(e1,:))
@@ -34,7 +59,6 @@ while ~isempty(F)
   FK(F) = true; 
 end
 s = [K(1),nE+1];
-K = unique(K);  i = find(K==e);  K = [K(i:end),K(1:i-1)];
-[C,E,L,E2N,nC,nE] = createSimultBisection(C,E,L,E2N,nC,nE,K);
-
-
+K = unique(K);  i = find(K==e);
+K = [K(i:end),K(1:i-1)];
+createSimultBisection(K);

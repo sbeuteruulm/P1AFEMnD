@@ -1,4 +1,30 @@
 function varargout = volngrad(coordinates,elements)
+% Calculation of volumes of each element and gradients of nodal interpolant
+% functions
+%
+% varargout = volngrad(coordinates,elements) calculates the volume and
+% gradient of the basis functions for a given simplex. The latter is an
+% optional output variable. Accordingly, varargout is a cell array that
+% contains either the volume only or the volume and an array for the
+% gradients. The volumes are given as a vector and the gradients are cell 
+% arrays themselves, one for each element. The input array coordinates
+% saves for any mesh node the respective coordinates in a row. In the same
+% way, the nodes of each element are given in the respective row of
+% elements.
+%
+%Comments:
+%   A Cholesky decomposition of the matrices containing the differences of
+%   the element vertices is calculated. The advantage is that the volumes
+%   can be calculated as a byproduct.
+%
+%Remark:
+%   This program is a supplement to the paper 
+%   >> Efficient P1-FEM for any space dimension in Matlab <<
+%   by S. Beuter, and S. Funken. The reader should 
+%   consult that paper for more information.   
+%
+%Authors:
+%   S. Beuter, S. Funken 18-10-22
 
 nD = size(coordinates,2);
 nN = size(elements,2);
@@ -7,15 +33,11 @@ switch nN
   case 2
      varargout{1} = abs(coordinates(elements(:,1))-coordinates(elements(:,2)));
      if nargout == 2
-         grad{1} = -1./(coordinates(elements(:,1))-coordinates(elements(:,2)));
-         grad{2} = -1./(coordinates(elements(:,2))-coordinates(elements(:,1)));
+         grad{1} = 1./(coordinates(elements(:,1))-coordinates(elements(:,2)));
+         grad{2} = 1./(coordinates(elements(:,2))-coordinates(elements(:,1)));
          varargout{2} = grad;
      end
-%   case 3
-%      [varargout{1:nargout}] = vol2grad(coordinates,elements);
-%   case 4
-%      [varargout{1:nargout}] = vol3grad(coordinates,elements);
-    otherwise
+  otherwise    
     %*** Compute Gram matrix L
     idx = repmat(1:nN-1,nN-1,1);
     ii = idx(logical(tril(idx,0))); idx = idx';
@@ -64,40 +86,3 @@ switch nN
       varargout{2} = grad;
     end
 end
-
-function [volume,grad] = vol2grad(coordinates,elements)
-%*** First vertex of elements and corresponding edge vectors 
-c1 = coordinates(elements(:,1),:);
-d21 = coordinates(elements(:,2),:) - c1;
-d31 = coordinates(elements(:,3),:) - c1;
-%*** Vector of element areas 2 * |T|
-volume2 = d21(:,1).*d31(:,2)-d21(:,2).*d31(:,1);
-volume = abs(volume2)/2;
-if nargout == 2
-  grad{3} = [-d21(:,2), d21(:,1)]./volume2(:,[1,1]);
-  grad{2} = [ d31(:,2),-d31(:,1)]./volume2(:,[1,1]);
-  grad{1} = -( grad{2} + grad{3} );
-end
-
-function [volume,grad] = vol3grad(coordinates,elements)
-%*** First vertex of elements and corresponding edge vectors 
-c1  = coordinates(elements(:,1),:);
-d21 = coordinates(elements(:,2),:) - c1;
-d31 = coordinates(elements(:,3),:) - c1;
-d41 = coordinates(elements(:,4),:) - c1;
-grad{4} = cross_(d21,d31); 
-%*** Vector of element volumes 6 * |T|
-volume6 = dot(grad{4},d41,2);
-volume = abs(volume6)/6;
-if nargout == 2
-  grad{4} =         grad{4}./volume6(:,[1,1,1]);
-  grad{3} = cross_(d41,d21)./volume6(:,[1,1,1]);
-  grad{2} = cross_(d31,d41)./volume6(:,[1,1,1]);
-  grad{1} = -( grad{2} + grad{3} + grad{4} );
-end
-
-function X = cross_(u,v)
-X = [u(:,2).*v(:,3)-u(:,3).*v(:,2), ...
-     u(:,3).*v(:,1)-u(:,1).*v(:,3), ...
-     u(:,1).*v(:,2)-u(:,2).*v(:,1)];
-
